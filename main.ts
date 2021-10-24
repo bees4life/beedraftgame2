@@ -6,6 +6,8 @@ namespace SpriteKind {
     export const seedPacket = SpriteKind.create()
     export const statusBar = SpriteKind.create()
     export const introBee = SpriteKind.create()
+    export const plantedFlowerBox = SpriteKind.create()
+    export const parasite = SpriteKind.create()
 }
 function spawnPlanterBox () {
     planterBox1 = sprites.create(assets.image`planterBox`, SpriteKind.planterBox)
@@ -22,8 +24,11 @@ function levelThree () {
     startGame()
 }
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
-    if (info.score() > 0 && overlapCheck == "true") {
+    if (info.score() > 0 && (beekeeper.overlapsWith(planterBox1) || (beekeeper.overlapsWith(planterBox2) || beekeeper.overlapsWith(planterBox3)))) {
+        pause(50)
         info.changeScoreBy(-1)
+        numberOfSeeds.destroy()
+        numberOfSeedsfunction()
     }
 })
 function introduction () {
@@ -401,6 +406,7 @@ function levelOne () {
         ....................
         `, SpriteKind.seedPacket)
     seedPacket3.setPosition(144, 95)
+    numberOfSeedsfunction()
 }
 info.onCountdownEnd(function () {
     game.over(false)
@@ -409,14 +415,47 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.seedPacket, function (sprite, ot
     if (otherSprite == seedPacket1) {
         seedPacket1.destroy()
         info.changeScoreBy(1)
+        numberOfSeeds.destroy()
+        numberOfSeedsfunction()
     } else if (otherSprite == seedPacket2) {
         seedPacket2.destroy()
         info.changeScoreBy(1)
+        numberOfSeeds.destroy()
+        numberOfSeedsfunction()
     } else if (otherSprite == seedPacket3) {
         seedPacket3.destroy()
         info.changeScoreBy(1)
+        numberOfSeeds.destroy()
+        numberOfSeedsfunction()
     }
 })
+function numberOfSeedsfunction () {
+    numberOfSeeds = textsprite.create(": " + info.score())
+    numberOfSeeds.setIcon(img`
+        ....................
+        ....................
+        ...ffffffffffffff...
+        ...fdccdccdccdccf...
+        ...ff1111111111ff...
+        ....fddddddddddf....
+        ....fddddddddddf....
+        ....fddddddddddf....
+        ....fdddddddcddf....
+        ....fddddddc3cdf....
+        ....fddcddddcddf....
+        ....fdc3cdddeddf....
+        ....fddcddd7eddf....
+        ....fd7edddde7df....
+        ....fddeddddeddf....
+        ....feeeeeeeeeef....
+        ...ff1111111111ff...
+        ...fccdccdccdccdf...
+        ...ffffffffffffff...
+        ....................
+        `)
+    numberOfSeeds.setOutline(1, 15)
+    numberOfSeeds.setPosition(39, 30)
+}
 info.onLifeZero(function () {
     game.over(false)
 })
@@ -427,10 +466,15 @@ function celebrationRoom () {
     startGame()
 }
 sprites.onOverlap(SpriteKind.Player, SpriteKind.planterBox, function (sprite, otherSprite) {
-    overlapCheck = "true"
-    if (otherSprite == planterBox1 && controller.B.isPressed()) {
+    if (info.score() > 0) {
+        beekeeper.sayText("Press B", 200, false)
+    }
+    if (otherSprite == planterBox1 && (info.score() > 0 && controller.B.isPressed())) {
+        planterBox1.destroy()
+        plantedFlowerBox1 = sprites.create(assets.image`planterBox`, SpriteKind.plantedFlowerBox)
+        plantedFlowerBox1.setPosition(90, 23)
         animation.runImageAnimation(
-        planterBox1,
+        plantedFlowerBox1,
         [img`
             .........................
             .........................
@@ -517,50 +561,73 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.planterBox, function (sprite, ot
         500,
         false
         )
-    } else if (otherSprite == planterBox2 && controller.B.isPressed()) {
+    } else if (otherSprite == planterBox2 && (info.score() > 0 && controller.B.isPressed())) {
+        planterBox2.destroy()
+        plantedFlowerBox2 = sprites.create(assets.image`planterBox`, SpriteKind.plantedFlowerBox)
+        plantedFlowerBox2.setPosition(130, 23)
         animation.runImageAnimation(
-        planterBox2,
+        plantedFlowerBox2,
         [img`
             . . . . . . . . 3 . . . . . . . 
             . . . . . . . 3 . . . . . . . . 
-            . . . 3 . . . 3 . . . . . . . . 
-            . . . 3 . . . 3 . 3 3 3 . . . . 
-            . . . 3 . . . 3 3 . . . 3 . . . 
-            . . . 3 . . . 3 3 . . . 3 . . . 
-            . . . . 3 3 . 3 3 3 . . 3 . . . 
-            . . . . . . 3 3 3 3 . . 3 . . . 
-            . . . . . . . 3 3 3 . 3 . . . . 
-            . . . . . . . . 3 3 3 3 . . . . 
-            . . . . . . . . 3 3 . . . . . . 
-            . . . . . . . 3 3 3 . . . . . . 
-            . . . . 3 3 3 3 . 3 . . . . . . 
-            . . . 3 3 . . . . 3 . . . . . . 
-            . . . . 3 . . . 3 3 . . . . . . 
+            . . . 3 . . 2 2 2 . . . . . . . 
+            . . . 3 . 2 . 3 . 2 3 3 . . . . 
+            . . . 3 2 . . 3 3 2 2 2 3 . . . 
+            . . . 3 2 . . 2 2 . . . 2 . . . 
+            . . . . 2 3 2 3 3 3 . . 2 . . . 
+            . . . . 2 2 2 3 3 3 . . 2 2 . . 
+            . . . . . 2 . 3 3 3 . 3 2 2 . . 
+            . . . . 2 2 . . 3 3 3 3 2 2 . . 
+            . . . . 2 2 . . 3 3 . 2 2 2 . . 
+            . . . . . 2 2 3 3 3 . . . 2 . . 
+            . . . . 3 2 3 2 2 2 2 2 2 . . . 
+            . . . 3 3 2 2 2 . 3 . . . . . . 
+            . . . . 3 . . . 2 2 2 2 2 . . . 
             . . . . . 3 3 3 3 . . . . . . . 
             `,img`
             . . . . . . . 7 . . . . . . . . 
             . . . . . . 7 . . . . . . . . . 
-            . . . . . 7 . . . . . . . . . . 
-            . . . . 7 . . . . . 7 7 7 . . . 
-            . . . 7 . 7 7 7 7 7 7 . 7 7 . . 
-            . . 7 . 7 7 . . 7 7 . . . 7 . . 
-            . . 7 . 7 . . . 7 . . . 7 7 . . 
-            . 7 7 . 7 . . . . . . . 7 . . . 
-            . 7 . . 7 . . . . . . . 7 . . . 
-            . 7 . . 7 . . . . . . 7 . . . . 
-            . 7 . . 7 . . . . . 7 . . . . . 
-            . 7 . . 7 . . . . 7 7 . . . . . 
-            . 7 . . . . . . 7 . . . . . . . 
-            . 7 7 7 7 7 7 7 . . . . . . . . 
+            . . . . . 2 2 2 2 2 2 2 . . . . 
+            . . . 2 2 . . . 2 2 2 2 7 . . . 
+            . . 2 7 . 7 2 2 7 7 7 . 2 2 . . 
+            . 2 2 . 7 7 2 . 7 7 . . 2 2 . . 
+            2 . 7 . 7 . 2 . 7 . . . 2 2 . . 
+            2 7 7 . 7 . 2 . . . . . 2 2 . . 
+            2 7 . . 7 . 2 . . . . . 2 2 . . 
+            2 7 . . 7 . 2 . . . . 7 2 . . . 
+            2 7 . . 7 . . 2 . . 7 2 2 . . . 
+            . 2 . . 7 . . 2 . 7 2 . . . . . 
+            . 2 2 2 . . . . 2 2 . . . . . . 
+            . 7 7 7 2 2 2 2 2 2 2 . . . . . 
             . . . . . . . . . . . . . . . . 
+            . . . . . . . . . . . . . . . . 
+            `,img`
+            . . . . . . . . . . . . . . . . 
+            . . . . . . . 2 2 2 . . . . . . 
+            . . . . . . 2 2 . 2 2 . . . . . 
+            . . . . . . 2 . . . . 2 . . . . 
+            . . . 2 2 2 2 . . . . 2 . . . . 
+            . . 2 2 . . 2 . . . . 2 . . . . 
+            . . 2 . . . 2 . . . . 2 . . . . 
+            . . 2 . . . 2 . . . . 2 . . . . 
+            . . 2 . . . . . . . 2 . . . . . 
+            . . 2 . . . . . . . 2 . . . . . 
+            . . 2 2 . . . . . 2 . . . . . . 
+            . . . 2 . . . . . 2 . . . . . . 
+            . . . 2 . . . . 2 2 . . . . . . 
+            . . . . 2 . . 2 . . . . . . . . 
+            . . . . 2 2 2 2 . . . . . . . . 
             . . . . . . . . . . . . . . . . 
             `],
         500,
         false
         )
-    } else if (otherSprite == planterBox3 && controller.B.isPressed()) {
+    } else if (otherSprite == planterBox3 && (info.score() > 0 && controller.B.isPressed())) {
+        planterBox3.destroy()
+        plantedFlowerBox3 = sprites.create(assets.image`planterBox`, SpriteKind.plantedFlowerBox)
+        plantedFlowerBox3.setPosition(170, 23)
         animation.runImageAnimation(
-        planterBox3,
+        plantedFlowerBox3,
         [img`
             . . . . . . . . . . . . . . . . 
             . . . . . . . . . . . . . . . . 
@@ -607,12 +674,15 @@ function levelTwo () {
     gameStatus = 4
     startGame()
 }
+let plantedFlowerBox3: Sprite = null
+let plantedFlowerBox2: Sprite = null
+let plantedFlowerBox1: Sprite = null
 let seedPacket3: Sprite = null
 let seedPacket2: Sprite = null
 let seedPacket1: Sprite = null
-let beekeeper: Sprite = null
 let introBee: Sprite = null
-let overlapCheck = ""
+let numberOfSeeds: TextSprite = null
+let beekeeper: Sprite = null
 let planterBox3: Sprite = null
 let planterBox2: Sprite = null
 let planterBox1: Sprite = null
